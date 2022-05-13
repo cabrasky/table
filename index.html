@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="table">
+        <div class="hRow">
+            <div class="dCell">
+                Hola
+                <div class="resize"></div>
+            </div>
+            <div class="dCell">
+                Hola
+                <div class="resize"></div>
+            </div>
+            <div class="dCell">
+                Hola
+                <div class="resize"></div>
+            </div>
+            <div class="dCell">
+                Hola
+                <div class="resize"></div>
+            </div>
+            <div class="dCell">
+                Hola
+                <div class="resize"></div>
+            </div>
+            <div class="dCell">
+                Hola
+                <div class="resize"></div>
+            </div>
+            <div class="dCell">
+                Hola
+                <div class="resize"></div>
+            </div>
+            <div class="dCell">
+                Hola
+                <div class="resize"></div>
+            </div>
+            
+        </div>
+        <div class="dRow">
+            <div class="dCell"></div>
+            <div class="dCell"></div>
+            <div class="dCell"></div>
+            <div class="dCell"></div>
+            <div class="dCell"></div>
+            <div class="dCell"></div>
+            <div class="dCell"></div>
+            <div class="dCell"></div>
+        </div>
+
+    </div>
+    <style>
+        *{
+            padding: 0px;
+            margin: 0px;
+        }
+        .table {
+            display: block;
+            max-width: -moz-fit-content;
+            max-width: fit-content;
+            margin: 0 auto;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .table .dCell{
+            border: 1px solid black;
+            background-color: gray;
+        }
+        .dCell{
+            display: inline-block;
+        }
+        .hRow .dCell{
+            position: relative;
+        }
+        .resize{
+            top: 0px;
+            position: absolute;
+            float: right;
+            width: 5px; 
+            cursor:col-resize;
+            user-select: none;
+        }
+        .resize:hover{
+            background-color:red;
+        }
+    </style>
+    
+</body>
+<script>
+    onload = function(){
+        var table = document.getElementsByClassName("table")[0]
+        var collumsWidth = []
+        for(var i = 0; i < table.children[0].children.length; i++){
+            var hCell = table.children[0].children[i]
+            for(var j = 0; j < table.children.length; j++){
+                var act_cell = table.children[j].children[i]
+                act_cell.style.width = i*100 + "px"
+            }
+            var resize = hCell.getElementsByClassName("resize")[0]
+            resize.style.height = table.getBoundingClientRect().height + "px"
+            resize.style.left = (hCell.getBoundingClientRect().width) + "px"
+            resize.addEventListener('mousedown', function(e){
+                console.log("clicked")
+                var clicked = true
+                resize.addEventListener('mouseup', function(f){
+                    console.log("mouseUp")
+                    clicked = false
+                    resize.removeEventListener('mouseup')
+                })
+                
+            })
+        }
+    }
+    document.addEventListener(mouseUp) = 
+</script>
+</html>
