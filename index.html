@@ -53,7 +53,9 @@
             <div class="dCell"></div>
             <div class="dCell"></div>
         </div>
-
+    </div>
+    <div id="tableSlider">
+        <div style="border: 5px black solid; border-radius: 2.5px; height: 3px;" ></div>
     </div>
     <style>
         *{
@@ -65,8 +67,7 @@
             max-width: -moz-fit-content;
             max-width: fit-content;
             margin: 0 auto;
-            overflow-x: auto;
-            overflow-y: hidden;
+            overflow: hidden;
             white-space: nowrap;
             font-size: 0;
         }
@@ -96,14 +97,26 @@
         .resize:hover{
             background-color:red;
         }
+        #tableSlider div{
+            cursor: grab;
+            position: absolute;
+            float: left;
+        }
+        #tableSlider{
+            width: 100vw;
+            height: 10px;
+        }
     </style>
     
 </body>
 <script>
     var beenClicked = null
     var lastClicked = null
+    var scrollRelation = 0
+    var tableSlider = document.getElementById("tableSlider")
+    var table = document.getElementsByClassName("table")[0]
     onload = function(){
-        var table = document.getElementsByClassName("table")[0]
+        
         var collumsWidth = []
         for(var i = 0; i < table.children[0].children.length; i++){
             var hCell = table.children[0].children[i]
@@ -129,6 +142,10 @@
             })
             
         }
+        scrollRelation = table.getBoundingClientRect().width / table.scrollWidth
+        tableSlider.children[0].style.width = scrollRelation * window.innerWidth + "px"
+
+        
     }
     document.addEventListener('mouseup', function(e){
         if(beenClicked){
@@ -137,6 +154,46 @@
         beenClicked = null
     })
 
-    
+    tableSlider.addEventListener('mousedown', function(e){
+        console.log("clicked")
+        var clickOffset = 0
+        if(e.clientX < tableSlider.children[0].getBoundingClientRect().left){
+            clickOffset = -tableSlider.children[0].getBoundingClientRect().width / 2
+        } else if (e.clientX > tableSlider.children[0].getBoundingClientRect().left && e.clientX < tableSlider.children[0].getBoundingClientRect().left + tableSlider.children[0].getBoundingClientRect().width){
+            clickOffset = tableSlider.children[0].getBoundingClientRect().left - e.screenX
+            console.log(clickOffset)
+        } else {
+            clickOffset = -tableSlider.children[0].getBoundingClientRect().width / 2
+        }
+        if(e.clientX + clickOffset < 0) {
+            clickOffset = -e.clientX
+        } else if ((e.clientX + clickOffset + tableSlider.children[0].getBoundingClientRect().width) > table.getBoundingClientRect().width) {
+            clickOffset = -e.clientX + (table.getBoundingClientRect().width - tableSlider.children[0].getBoundingClientRect().width)
+        }
+        var clicked = true;
+        var left = e.clientX + clickOffset
+        tableSlider.children[0].style.left = left + "px"
+        tableSlider.noClicked = function(){
+            clicked = false
+            tableSlider.style.borderColor = "blue"
+            console.log("mouseUp")
+        }
+        document.addEventListener("mousemove", function(f){
+            if(clicked){
+                if(f.clientX + clickOffset < 0) {
+                    clickOffset = -f.clientX
+                } else if ((f.clientX + clickOffset + tableSlider.children[0].getBoundingClientRect().width) > table.getBoundingClientRect().width) {
+                    clickOffset = -f.clientX + (table.getBoundingClientRect().width - tableSlider.children[0].getBoundingClientRect().width)
+                }
+                table.scrollBy(f.movementX / scrollRelation, 0)
+                left = f.clientX + clickOffset
+
+                tableSlider.children[0].style.left = left + "px"
+            }
+        })
+        beenClicked = tableSlider
+        lastClicked = tableSlider
+                
+    })
 </script>
 </html>
