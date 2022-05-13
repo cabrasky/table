@@ -153,10 +153,10 @@
         }
         beenClicked = null
     })
-
+    tableSlider.left = 0
     tableSlider.addEventListener('mousedown', function(e){
         console.log("clicked")
-        var clickOffset = 0
+        tableSlider.clickOffset = 0
         if(e.clientX < tableSlider.children[0].getBoundingClientRect().left){
             clickOffset = -tableSlider.children[0].getBoundingClientRect().width / 2
         } else if (e.clientX > tableSlider.children[0].getBoundingClientRect().left && e.clientX < tableSlider.children[0].getBoundingClientRect().left + tableSlider.children[0].getBoundingClientRect().width){
@@ -170,34 +170,46 @@
         } else if ((e.clientX + clickOffset + tableSlider.children[0].getBoundingClientRect().width) > table.getBoundingClientRect().width) {
             clickOffset = -e.clientX + (table.getBoundingClientRect().width - tableSlider.children[0].getBoundingClientRect().width)
         }
-        var clicked = true;
-        var left = e.clientX + clickOffset
-        tableSlider.children[0].style.left = left + "px"
+        tableSlider.clicked = true;
+        tableSlider.left = e.clientX + clickOffset
+        tableSlider.children[0].style.left = tableSlider.left + "px"
         tableSlider.noClicked = function(){
-            clicked = false
+            tableSlider.clicked = false
             tableSlider.style.borderColor = "blue"
             console.log("mouseUp")
         }
         document.addEventListener("mousemove", function(f){
-            if(clicked){
-                if(f.clientX + clickOffset < 0) {
-                    clickOffset = -f.clientX
-                } else if ((f.clientX + clickOffset + tableSlider.children[0].getBoundingClientRect().width) > table.getBoundingClientRect().width) {
-                    clickOffset = -f.clientX + (table.getBoundingClientRect().width - tableSlider.children[0].getBoundingClientRect().width)
-                }
-                table.scrollBy(f.movementX / scrollRelation, 0)
-                left = f.clientX + clickOffset
-
-                tableSlider.children[0].style.left = left + "px"
+            if(tableSlider.clicked){
+                tableSlider.left = f.clientX + clickOffset
+                tableSlider.move(f)
             }
         })
         beenClicked = tableSlider
         lastClicked = tableSlider
                 
     })
+
+    tableSlider.move = function(f){
+        table.scrollBy(f.movementX / scrollRelation, 0)
+        tableSlider.left += f.movementX
+        if(tableSlider.left < 0){
+            tableSlider.left = 0
+        } else if (tableSlider.left + tableSlider.children[0].getBoundingClientRect().width > table.getBoundingClientRect().width){
+            tableSlider.left = table.getBoundingClientRect().width - tableSlider.children[0].getBoundingClientRect().width
+        }
+        tableSlider.children[0].style.left = tableSlider.left + "px"
+    }
+
     onresize = function(e){
         scrollRelation = table.getBoundingClientRect().width / table.scrollWidth
         tableSlider.children[0].style.width = scrollRelation * window.innerWidth + "px"
     }
+    table.addEventListener("wheel", (evt) => {
+        evt.preventDefault();
+        tableSlider.move({
+            "movementX": evt.deltaY
+        })
+        
+    })
 </script>
 </html>
