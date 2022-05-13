@@ -93,6 +93,8 @@
     
 </body>
 <script>
+    var beenClicked = null
+    var lastClicked = null
     onload = function(){
         var table = document.getElementsByClassName("table")[0]
         var collumsWidth = []
@@ -105,18 +107,29 @@
             var resize = hCell.getElementsByClassName("resize")[0]
             resize.style.height = table.getBoundingClientRect().height + "px"
             resize.style.left = (hCell.getBoundingClientRect().width) + "px"
+
             resize.addEventListener('mousedown', function(e){
                 console.log("clicked")
-                var clicked = true
-                resize.addEventListener('mouseup', function(f){
+                var clicked = true;
+                e.target.noClicked = function(){
+                    e.target.style.backgroundColor = "blue"
                     console.log("mouseUp")
-                    clicked = false
-                    resize.removeEventListener('mouseup')
-                })
+                    
+                }
+                beenClicked = e.target
+                lastClicked = e.target
                 
             })
+            
         }
     }
-    document.addEventListener(mouseUp) = 
+    document.addEventListener('mouseup', function(e){
+        if(beenClicked){
+            beenClicked.noClicked()
+        }
+        beenClicked = null
+    })
+
+    
 </script>
 </html>
