@@ -195,5 +195,9 @@
         lastClicked = tableSlider
                 
     })
+    onresize = function(e){
+        scrollRelation = table.getBoundingClientRect().width / table.scrollWidth
+        tableSlider.children[0].style.width = scrollRelation * window.innerWidth + "px"
+    }
 </script>
 </html>
