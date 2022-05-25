@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!---
+    <div class="table">
+        <div class="hRow">
+            <div class="hCell">
+                Hola
+                <div class="hResize"></div>
+            </div>
+            <div class="hCell">
+                Hola
+                <div class="hResize"></div>
+            </div>
+            <div class="hCell">
+                Hola
+                <div class="hResize"></div>
+            </div>
+            <div class="hCell">
+                Hola
+                <div class="hResize"></div>
+            </div>
+            <div class="hCell">
+                Hola
+                <div class="hResize"></div>
+            </div>
+            <div class="hCell">
+                Hola
+                <div class="hResize"></div>
+            </div>
+            <div class="hCell">
+                Hola
+                <div class="hResize"></div>
+            </div>
+            <div class="hCell">
+                Hola
+                <div class="hResize"></div>
+            </div>
+        </div>
+    </div>
+    <div id="tableSlider">
+        <div style="border: 5px black solid; border-radius: 2.5px; height: 3px;" ></div>
+    </div>
+    -->
+    <div id="table_frame">
+
+    </div>
+    <style>
+
+        *{
+            padding: 0;
+            margin: 0;
+        }
+        .table {
+            display: block;
+            max-width: -moz-fit-content;
+            max-width: fit-content;
+            margin: 0 auto;
+            overflow: hidden;
+            white-space: nowrap;
+            font-size: 0;
+        }
+        .dCell, .hCell{
+            padding-left: 2.5px;
+            border: 1px solid black;
+            background-color: gray;
+            position: relative;
+            display: inline-block;
+            font-size: 20px;
+        }
+        .hResize{
+            width: 5px;
+            height: 10px;
+            float: right;
+            right: -2.5px;
+            position: relative;
+            cursor:col-resize;
+            user-select: none;
+            z-index: 10;
+            background-color:red;
+        }
+        .hResize:hover{
+            background-color:rgb(0, 42, 156);
+        }
+        #tableSlider{
+            width: 100vw;
+            height: 10px;
+        }
+        .d_data {
+            display: inline-block;
+        }
+    </style>
+    
+</body>
+<script>
+    var min_width = 30
+    class table {
+        constructor(headers){
+            this.headers_data = headers
+            this.node = document.createElement('div')
+            this.generateTable()
+        }
+
+        generateTable = function(){
+            var headerRow = document.createElement("div")
+            headerRow.classList.add("hRow")
+            for(var i = 0; i < this.headers_data.length; i++){
+                var act_header_info = this.headers_data[i]
+                var act_header = document.createElement("div")
+                var p_data = document.createElement("p")
+                p_data.classList.add("d_data")
+                p_data.innerHTML = act_header_info.innerHTML
+                act_header.appendChild(p_data)
+                act_header.classList.add("hCell")
+                var hResize = document.createElement("div")
+                hResize.classList.add("hResize")
+                act_header.appendChild(hResize)
+                headerRow.appendChild(act_header)
+            }
+            this.node.innerHTML = ""
+            this.node.appendChild(headerRow)
+        }
+
+        addColumn = function(colInfo){
+            var newCol = document.createElement("div")
+            newCol.classList.add("hCell")
+            var p_data = document.createElement("p")
+            p_data.classList.add("d_data")
+            p_data.innerHTML = colInfo.innerHTML
+            newCol.appendChild(p_data)
+            var hResize = document.createElement("div")
+            hResize.classList.add("hResize")
+            newCol.appendChild(hResize)
+            this.headers_data[colInfo.id] = colInfo
+            this.headers[colInfo.id] = newCol
+            this.node.children[0].appendChild(newCol)
+        }
+
+        addRow = function(rowInfo){
+            rowInfo = {
+                "hola": {
+
+                }
+            }
+            this.row_info.push(rowInfo)
+        }
+
+        
+    }
+
+    var _table = new table([{"innerHTML": "adios", "id": "hola", "visible": true}])
+    var table_frame = document.getElementById("table_frame")
+    table_frame.appendChild(_table.node)
+
+
+</script>
+</html>
