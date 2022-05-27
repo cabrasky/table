@@ -5,49 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <meta name="author" content="Cabrasky">
 </head>
 <body>
-    <!---
-    <div class="table">
-        <div class="hRow">
-            <div class="hCell">
-                Hola
-                <div class="hResize"></div>
-            </div>
-            <div class="hCell">
-                Hola
-                <div class="hResize"></div>
-            </div>
-            <div class="hCell">
-                Hola
-                <div class="hResize"></div>
-            </div>
-            <div class="hCell">
-                Hola
-                <div class="hResize"></div>
-            </div>
-            <div class="hCell">
-                Hola
-                <div class="hResize"></div>
-            </div>
-            <div class="hCell">
-                Hola
-                <div class="hResize"></div>
-            </div>
-            <div class="hCell">
-                Hola
-                <div class="hResize"></div>
-            </div>
-            <div class="hCell">
-                Hola
-                <div class="hResize"></div>
-            </div>
-        </div>
-    </div>
-    <div id="tableSlider">
-        <div style="border: 5px black solid; border-radius: 2.5px; height: 3px;" ></div>
-    </div>
-    -->
     <div id="table_frame">
 
     </div>
@@ -122,31 +82,29 @@
     var beenClicked = undefined
     var min_width = 30
     class table {
-        constructor(headers){
-            this.headers_data = headers
+        constructor(){
+            this.headers_data = []
+            this.rows_data = []
             this.node = document.createElement('div')
             this.node.classList.add("table")
             this.resizers = []
-            this.generateTable()
-        }
-
-        generateTable = function(){
-            for(var i = 0; i < this.headers_data.length; i++){
-                
-                this.addColumn_i(this.headers_data[i])
-            }
         }
 
         addColumn = function(colInfo){
-            this.headers_data[colInfo.id] = colInfo
             this.addColumn_i(colInfo)
         }
 
         addColumn_i = function(header_data){
-            var innerCol = document.createElement("div")
-            innerCol.classList.add("innerCol")
+            
+            this.headers_data.push(header_data)
             var col = document.createElement("div")
             col.classList.add("col")
+            col["column_id"] = header_data["id"]
+            var id = Math.random()
+            col.id = id
+            header_data["html_id"] = id
+            var innerCol = document.createElement("div")
+            innerCol.classList.add("innerCol")
             var act_header_info = header_data
             var act_header = document.createElement("div")
             var p_data = document.createElement("p")
@@ -176,7 +134,26 @@
             }
         }
 
-        
+        addRow = function(rowInfo){
+            this.rows_data.push(rowInfo)
+            for(var i = 0; i < this.headers_data.length; i++){
+                var actual_header = this.headers_data[i]
+                var act_dataCell = document.createElement("div")
+                act_dataCell.classList.add("hCell")
+                var headerName = actual_header["id"]
+                try {
+                    var act_dataP = document.createElement("p")
+                    act_dataP.classList.add("d_data")
+                    act_dataP.innerHTML = rowInfo[headerName]
+                    act_dataCell.append(act_dataP)
+                } catch (error) {
+                    
+                }
+                var col = document.getElementById(actual_header["html_id"])
+                col.children[0].appendChild(act_dataCell)
+            }
+            this.hResizeHeight()
+        }
     }
 
 
@@ -231,8 +208,6 @@
         console.log(e.target)
         e.target.parentElement["width"] = e.target.parentElement.getBoundingClientRect().width
     }
-
-
     window.onresize = function(){
         var tables = document.getElementsByClassName("table")
         for(var i = 0; i < tables.length; i++){
@@ -241,7 +216,7 @@
         }
     }
     function isOverflown(element) {
-        return element.scrollHeight > element.parentElement.getBoundingClientRect().height || element.scrollWidth > element.parentElement.getBoundingClientRect().width;
+        return element.scrollWidth > element.parentElement.getBoundingClientRect().width;
     }
     function resizeScrollBar(act_table){
 
@@ -275,12 +250,17 @@
 </script>
 <script>
 
-    var _table = new table([{"innerHTML": "adios", "id": "hola", "visible": true}])
+    var _table = new table()
     var table_frame = document.getElementById("table_frame")
     table_frame.appendChild(_table.node)
 
-    for(var i = 0; i < 10; i++){
-        _table.addColumn({"innerHTML": "adioddsds", "id": "hdsdola", "visible": true})
+    
+    _table.addColumn({"innerHTML": "hola", "id": "hola", "visible": true})
+    _table.addColumn({"innerHTML": "adios", "id": "adios", "visible": true})
+    _table.addColumn({"innerHTML": "test", "id": "test", "visible": true})
+
+    for(var i = 0; i < 12; i++){
+        _table.addRow({"hola": i, "adios": i + 1, "test": i + 2,})
     }
 
 
