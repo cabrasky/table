@@ -61,36 +61,56 @@
             display: block;
             max-width: -moz-fit-content;
             max-width: fit-content;
-            margin: 0 auto;
             overflow: hidden;
             white-space: nowrap;
             font-size: 0;
         }
         .dCell, .hCell{
-            padding-left: 2.5px;
-            border: 1px solid black;
-            background-color: gray;
             position: relative;
-            display: inline-block;
+            display: block;
             font-size: 20px;
+            overflow-x: hidden;
+            top: 0px;
+            border: 1px solid black;
+        }
+        .col{
+            display: inline-block;
+            background-color: gray;
+        }.col:first-child{
+            margin-left: 0px;
+        }
+        .innerCol{
+            display: inline-block;
+            width: calc(100% - 5px)
+        }
+        .col:last-child .innerCol{
+            width: calc(100% - 2.5px);
         }
         .hResize{
             width: 5px;
-            height: 10px;
-            float: right;
-            right: -2.5px;
             position: relative;
+            top: 0px;
+            display: flex;
+            float: right;
             cursor:col-resize;
             user-select: none;
-            z-index: 10;
-            background-color:red;
+            background: white;
+            color: white;
         }
-        .hResize:hover{
-            background-color:rgb(0, 42, 156);
+        .col:last-child .hResize{
+            width: 2.5px;
+            
         }
         #tableSlider{
-            width: 100vw;
+            width: 100%;
             height: 10px;
+            background-color: wheat;
+        }
+        .tableSliderBar{
+            position: relative;
+            height: 8px;
+            margin-top: 1px;
+            background-color: black;
         }
         .d_data {
             display: inline-block;
@@ -99,64 +119,169 @@
     
 </body>
 <script>
+    var beenClicked = undefined
     var min_width = 30
     class table {
         constructor(headers){
             this.headers_data = headers
             this.node = document.createElement('div')
+            this.node.classList.add("table")
+            this.resizers = []
             this.generateTable()
         }
 
         generateTable = function(){
-            var headerRow = document.createElement("div")
-            headerRow.classList.add("hRow")
             for(var i = 0; i < this.headers_data.length; i++){
-                var act_header_info = this.headers_data[i]
-                var act_header = document.createElement("div")
-                var p_data = document.createElement("p")
-                p_data.classList.add("d_data")
-                p_data.innerHTML = act_header_info.innerHTML
-                act_header.appendChild(p_data)
-                act_header.classList.add("hCell")
-                var hResize = document.createElement("div")
-                hResize.classList.add("hResize")
-                act_header.appendChild(hResize)
-                headerRow.appendChild(act_header)
+                
+                this.addColumn_i(this.headers_data[i])
             }
-            this.node.innerHTML = ""
-            this.node.appendChild(headerRow)
         }
 
         addColumn = function(colInfo){
-            var newCol = document.createElement("div")
-            newCol.classList.add("hCell")
-            var p_data = document.createElement("p")
-            p_data.classList.add("d_data")
-            p_data.innerHTML = colInfo.innerHTML
-            newCol.appendChild(p_data)
-            var hResize = document.createElement("div")
-            hResize.classList.add("hResize")
-            newCol.appendChild(hResize)
             this.headers_data[colInfo.id] = colInfo
-            this.headers[colInfo.id] = newCol
-            this.node.children[0].appendChild(newCol)
+            this.addColumn_i(colInfo)
         }
 
-        addRow = function(rowInfo){
-            rowInfo = {
-                "hola": {
+        addColumn_i = function(header_data){
+            var innerCol = document.createElement("div")
+            innerCol.classList.add("innerCol")
+            var col = document.createElement("div")
+            col.classList.add("col")
+            var act_header_info = header_data
+            var act_header = document.createElement("div")
+            var p_data = document.createElement("p")
+            p_data.classList.add("d_data")
+            p_data.innerHTML = act_header_info.innerHTML
+            act_header.appendChild(p_data)
+            act_header.classList.add("hCell")
+            var hResize = document.createElement("div")
+            hResize.classList.add("hResize")
+            hResize.addEventListener("mousedown", function(e){resizeListener(e)}); 
+            innerCol.appendChild(act_header)
+            col.appendChild(innerCol)
+            col.appendChild(hResize)
+            this.resizers.push(hResize)
+            this.node.appendChild(col)
 
-                }
+            setTimeout(() => {
+                this.hResizeHeight()
+                resizeScrollBar(this.node)
+            }, 10);
+        }
+
+        hResizeHeight = function(){
+            var height = this.node.getBoundingClientRect().height
+            for(var i = 0; i < this.resizers.length; i++){
+                this.resizers[i].style.height = height + "px"
             }
-            this.row_info.push(rowInfo)
         }
 
         
     }
 
+
+    var lastPosition = {
+        x: 0.00,
+        y: 0.00
+    }
+
+    var clickOffset = 0
+    onmousemove = function(e){
+        if(beenClicked){
+            if(beenClicked.classList.contains("hResize")){
+                var parent = beenClicked.parentElement
+                parent["width"] += e.clientX - lastPosition.x
+                if(parent["width"] < min_width){
+                    parent.style.width = 30 + "px"
+                } else {
+                    parent.style.width = parent["width"] + "px"
+                }
+                
+                resizeScrollBar(parent.parentElement)
+            } else if (beenClicked.classList.contains("tableSliderBar")){
+                beenClicked["left"] += (e.clientX - lastPosition.x)
+                var scroll
+                if(beenClicked["left"] < 0){
+                    beenClicked.style.left = 0 + "px"
+                    scroll = 0
+                } else if(beenClicked["left"] / beenClicked["relation"] > beenClicked.parentElement.parentElement.getElementsByClassName("table")[0].scrollLeftMax){
+                    beenClicked.style.left = beenClicked.parentElement.parentElement.getElementsByClassName("table")[0].scrollLeftMax * beenClicked["relation"] + "px"
+                    scroll = beenClicked.parentElement.parentElement.getElementsByClassName("table")[0].scrollLeftMax
+                } else {
+                    beenClicked.style.left = beenClicked["left"] + "px"
+                    scroll = beenClicked["left"] / beenClicked["relation"]
+                }
+                beenClicked.parentElement.parentElement.getElementsByClassName("table")[0].scrollTo(scroll, 0)
+            }
+            
+            lastPosition.x = e.clientX
+            lastPosition.y = e.clientY
+            
+        }
+    }
+    
+    onmouseup = function(){
+        beenClicked = undefined
+    }
+
+    function resizeListener(e){
+        beenClicked = e.target
+        lastPosition.x = e.clientX
+        lastPosition.y = e.clientY        
+        console.log(e.target)
+        e.target.parentElement["width"] = e.target.parentElement.getBoundingClientRect().width
+    }
+
+
+    window.onresize = function(){
+        var tables = document.getElementsByClassName("table")
+        for(var i = 0; i < tables.length; i++){
+            var act_table = tables[i]
+            resizeScrollBar(act_table)
+        }
+    }
+    function isOverflown(element) {
+        return element.scrollHeight > element.parentElement.getBoundingClientRect().height || element.scrollWidth > element.parentElement.getBoundingClientRect().width;
+    }
+    function resizeScrollBar(act_table){
+
+        function recalcScroll(tableSliderBar){
+            tableSliderBar["relation"] = tableSliderBar.parentElement.getBoundingClientRect().width / act_table.scrollWidth
+            tableSliderBar.style.width = tableSliderBar["relation"] * 100 + "%"
+        }
+
+        if(isOverflown(act_table) && act_table.parentElement.getElementsByClassName("tableSlider").length == 0){
+            var scrollBar = document.createElement("div")
+            scrollBar.classList.add("tableSlider")
+            var tableSliderBar = document.createElement("div")
+            tableSliderBar.classList.add("tableSliderBar")
+            tableSliderBar["left"] = 0;
+            tableSliderBar.addEventListener("mousedown", function(e){
+                beenClicked = e.target
+                lastPosition.x = e.clientX
+                lastPosition.y = e.clientY
+                clickOffset = (e.clientX - tableSliderBar.getBoundingClientRect().left)
+            })
+            scrollBar.appendChild(tableSliderBar)
+            act_table.parentElement.appendChild(scrollBar)
+            recalcScroll(tableSliderBar)
+        } else if(isOverflown(act_table) && act_table.parentElement.getElementsByClassName("tableSlider").length == 1){
+            var tableSliderBar = act_table.parentElement.getElementsByClassName("tableSliderBar")[0]
+            recalcScroll(tableSliderBar)
+        } else if(act_table.parentElement.getElementsByClassName("tableSlider").length == 1){
+            act_table.parentElement.getElementsByClassName("tableSlider")[0].remove()
+        }
+    }
+</script>
+<script>
+
     var _table = new table([{"innerHTML": "adios", "id": "hola", "visible": true}])
     var table_frame = document.getElementById("table_frame")
     table_frame.appendChild(_table.node)
+
+    for(var i = 0; i < 10; i++){
+        _table.addColumn({"innerHTML": "adioddsds", "id": "hdsdola", "visible": true})
+    }
 
 
 </script>
