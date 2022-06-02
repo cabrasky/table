@@ -205,7 +205,6 @@
             setTimeout(() => {
                 this.hResizeHeight()
                 resizeScrollBar(this.node)
-                this.tableSort()
             }, 10);
         }
 
@@ -216,9 +215,18 @@
             }
         }
 
+        addRows = function(rowsInfo){     
+            for(var i = 0; i < rowsInfo.length; i++){
+                var rowInfo = rowsInfo[i]
+                this.rows_data.push(rowInfo)
+                this.addRowBack(rowInfo)
+            }
+            this.tableSort()
+        }
         addRow = function(rowInfo){
             this.rows_data.push(rowInfo)
             this.addRowBack(rowInfo)
+            this.tableSort()
         }
 
         addRowBack = function(rowInfo){
@@ -239,9 +247,7 @@
                 var col = document.getElementById(actual_header["html_id"]).getElementsByClassName("rows")[0]
                 col.appendChild(act_dataCell)
             }
-            this.hResizeHeight()            
-            this.tableSort()
-
+            this.hResizeHeight()
         }
 
 
@@ -249,7 +255,7 @@
             var header
             for(var i = 0; i < this.headers_data.length; i++){
                 var act_header_info = this.headers_data[i]
-                if(act_header_info["id"] = header_id){
+                if(act_header_info["id"] == header_id){
                     header = act_header_info
                 }
             }
@@ -274,6 +280,7 @@
                 this.sortedBy = header_data.id
                 this.sortedByHTML = header_data.html_id
                 this.sortedDirection = arrows_div["direction"]
+                this.tableSort()
             }
             
         }
@@ -410,10 +417,12 @@
     
     _table.addColumn({"innerHTML": "hola", "id": "hola", "visible": true, "sortable": true, "sortDefault": true})
     _table.addColumn({"innerHTML": "adios", "id": "adios", "visible": true, "sortable": true})
-    _table.addColumn({"innerHTML": "test", "id": "test", "visible": false})
+    _table.addColumn({"innerHTML": "test", "id": "test", "visible": true, "sortable": true})
 
+    var newRows = []
     for(var i = 0; i < 12; i++){
-        _table.addRow({"hola": Math.random(),"adios": Math.random(), "test": i + 2,})
+        newRows.push({"hola": Math.random(),"adios": Math.random(), "test": i + 2})
     }
+    _table.addRows(newRows)
 </script>
 </html>
