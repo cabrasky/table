@@ -239,7 +239,8 @@
                 var col = document.getElementById(actual_header["html_id"]).getElementsByClassName("rows")[0]
                 col.appendChild(act_dataCell)
             }
-            this.hResizeHeight()
+            this.hResizeHeight()            
+            this.tableSort()
 
         }
 
@@ -273,7 +274,6 @@
                 this.sortedBy = header_data.id
                 this.sortedByHTML = header_data.html_id
                 this.sortedDirection = arrows_div["direction"]
-                this.tableSort()
             }
             
         }
@@ -400,11 +400,6 @@
         } else if(act_table.parentElement.getElementsByClassName("tableSlider").length == 1){
             act_table.parentElement.getElementsByClassName("tableSlider")[0].remove()
         }
-    }
-
-    
-    Array.prototype.sortBy = function(atribute){
-        console.log(this.sort((a, b) => a[atribute] - b[atribute]))
     }
 </script>
 <script>
