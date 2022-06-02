@@ -29,15 +29,27 @@
             position: relative;
             display: block;
             font-size: 20px;
-            overflow-x: hidden;
+            overflow: hidden;
             top: 0px;
+            border: 0px solid black;
+            height: 25px;
+        }
+        .hCell{
             border: 1px solid black;
+            background-color: #f1f1f1;
+        }
+        .hCell > p{
+            display: inline-block;
         }
         .col{
             display: inline-block;
-            background-color: gray;
-        }.col:first-child{
+            background-color: #ffffff;
+        }
+        .col:first-child{
             margin-left: 0px;
+        }
+        .rows > .dCell:nth-child(even){
+            background-color: #f9f9f9;
         }
         .innerCol{
             display: inline-block;
@@ -75,6 +87,40 @@
         .d_data {
             display: inline-block;
         }
+        .hCell:hover > .sort > .sort_arrow{
+            display: block;
+        }
+        .sort{
+            height: 100%;
+            width: 20px;
+            float: right;
+        }
+        .sort > .sort_arrow{
+            height: 50%;
+            display: none;
+            text-align: center;
+            font-size: 20px;
+            color: grey;
+        }
+        .sort_used > .sort > *{
+            display: block;
+        }
+        .sort_up_arrow {
+            margin-top: -7.5px;
+        }
+        .sort_down_arrow {
+            margin-top: -5px;
+        }
+        .sort_arrow_used{
+            color: black !important;
+        }
+        .clicker {
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            position:absolute;
+        }
     </style>
     
 </body>
@@ -88,6 +134,7 @@
             this.node = document.createElement('div')
             this.node.classList.add("table")
             this.resizers = []
+            this.sortedDirection = "up"
         }
 
         addColumn = function(colInfo){
@@ -95,10 +142,11 @@
         }
 
         addColumn_i = function(header_data){
-            
+            header_data.rows = []
             this.headers_data.push(header_data)
             var col = document.createElement("div")
             col.classList.add("col")
+            col.style.display = header_data["visible"] ? "inline-block" : "none"
             col["column_id"] = header_data["id"]
             var id = Math.random()
             col.id = id
@@ -112,10 +160,43 @@
             p_data.innerHTML = act_header_info.innerHTML
             act_header.appendChild(p_data)
             act_header.classList.add("hCell")
+            if(header_data["sortable"]){
+                var sort_html = document.createElement("div")
+                sort_html.classList.add("sort")
+                var up_sort_html = document.createElement("div")
+                up_sort_html.classList.add("sort_up_arrow")
+                up_sort_html.classList.add("sort_arrow")
+                up_sort_html.innerHTML = "⏶"
+                var down_sort_html = document.createElement("div")
+                down_sort_html.classList.add("sort_down_arrow")
+                down_sort_html.classList.add("sort_arrow")
+                down_sort_html.innerHTML = "⏷"
+                sort_html.appendChild(up_sort_html)
+                sort_html.appendChild(down_sort_html)
+                act_header.appendChild(sort_html)
+                sort_html["direction"] = "down"
+                var clicker = document.createElement("div")
+                clicker.classList.add("clicker")
+                act_header.appendChild(clicker)
+                clicker["this_p"] = this
+                clicker.onclick = function(){
+                    this["this_p"].sortBy(act_header, header_data)
+                }
+                if(header_data["sortDefault"]){
+                    act_header.classList.add("sort_used")
+                    sort_html["direction"] = "up"
+                    up_sort_html.classList.add("sort_arrow_used")
+                    this.sortedBy = header_data.id
+                    this.sortedByHTML = header_data.html_id
+                }
+            }
             var hResize = document.createElement("div")
             hResize.classList.add("hResize")
-            hResize.addEventListener("mousedown", function(e){resizeListener(e)}); 
+            hResize.addEventListener("mousedown", function(e){resizeListener(e)});
+            var hRows = document.createElement("div")
+            hRows.classList.add("rows")
             innerCol.appendChild(act_header)
+            innerCol.appendChild(hRows)
             col.appendChild(innerCol)
             col.appendChild(hResize)
             this.resizers.push(hResize)
@@ -124,6 +205,7 @@
             setTimeout(() => {
                 this.hResizeHeight()
                 resizeScrollBar(this.node)
+                this.tableSort()
             }, 10);
         }
 
@@ -136,23 +218,95 @@
 
         addRow = function(rowInfo){
             this.rows_data.push(rowInfo)
+            this.addRowBack(rowInfo)
+        }
+
+        addRowBack = function(rowInfo){
             for(var i = 0; i < this.headers_data.length; i++){
                 var actual_header = this.headers_data[i]
                 var act_dataCell = document.createElement("div")
-                act_dataCell.classList.add("hCell")
+                act_dataCell.classList.add("dCell")
                 var headerName = actual_header["id"]
-                try {
+                if(rowInfo[headerName]){
                     var act_dataP = document.createElement("p")
                     act_dataP.classList.add("d_data")
                     act_dataP.innerHTML = rowInfo[headerName]
                     act_dataCell.append(act_dataP)
-                } catch (error) {
-                    
+                    this.headers_data[i].rows.push(rowInfo[headerName])
+                } else {
+                    this.headers_data[i].rows.push("")
                 }
-                var col = document.getElementById(actual_header["html_id"])
-                col.children[0].appendChild(act_dataCell)
+                var col = document.getElementById(actual_header["html_id"]).getElementsByClassName("rows")[0]
+                col.appendChild(act_dataCell)
             }
             this.hResizeHeight()
+
+        }
+
+
+        setVisible = function(header_id, visible){
+            var header
+            for(var i = 0; i < this.headers_data.length; i++){
+                var act_header_info = this.headers_data[i]
+                if(act_header_info["id"] = header_id){
+                    header = act_header_info
+                }
+            }
+            header["visible"] = visible
+            var header_html = document.getElementById(header["html_id"])
+            header_html.style.display = visible ? "inline-block" : "none"
+        }
+
+        sortBy = function(target, header_data){
+            if(this.node.getElementsByClassName("sort_used")[0]){
+                this.node.getElementsByClassName("sort_used")[0].classList.remove("sort_used")
+                var arrows_div = target.getElementsByClassName("sort")[0]
+                arrows_div["direction"] = arrows_div["direction"] == "down" ? "up" : "down"
+                if(arrows_div["direction"] == "down"){
+                    arrows_div.children[1].classList.add("sort_arrow_used")
+                    arrows_div.children[0].classList.remove("sort_arrow_used")
+                } else {
+                    arrows_div.children[0].classList.add("sort_arrow_used")
+                    arrows_div.children[1].classList.remove("sort_arrow_used")
+                }
+                target.classList.add("sort_used")
+                this.sortedBy = header_data.id
+                this.sortedByHTML = header_data.html_id
+                this.sortedDirection = arrows_div["direction"]
+                this.tableSort()
+            }
+            
+        }
+
+        tableSort = function(){
+            var sortIndex
+            for(var i = 0; i < this.headers_data.length; i++){
+                if(this.sortedBy == this.headers_data[i].id){
+                    sortIndex = i
+                    break
+                }
+            }
+
+            this.rows_data = this.rows_data.sort((a, b) => a[this.headers_data[sortIndex].id] - b[this.headers_data[sortIndex].id])
+
+            switch (this.sortedDirection) {
+                case "down":
+                    this.rows_data.reverse()
+                    break;
+            
+                default:
+                    break;
+            }
+
+            for(var i = 0; i < this.headers_data.length; i++){
+                this.headers_data[i].rows = []                
+                var col = document.getElementById(this.headers_data[i].html_id).getElementsByClassName("rows")[0]
+                col.innerHTML = ""
+            }
+
+            for(var i = 0; i < this.rows_data.length; i++){
+                this.addRowBack(this.rows_data[i])
+            }
         }
     }
 
@@ -247,22 +401,24 @@
             act_table.parentElement.getElementsByClassName("tableSlider")[0].remove()
         }
     }
+
+    
+    Array.prototype.sortBy = function(atribute){
+        console.log(this.sort((a, b) => a[atribute] - b[atribute]))
+    }
 </script>
 <script>
-
     var _table = new table()
     var table_frame = document.getElementById("table_frame")
     table_frame.appendChild(_table.node)
 
     
-    _table.addColumn({"innerHTML": "hola", "id": "hola", "visible": true})
-    _table.addColumn({"innerHTML": "adios", "id": "adios", "visible": true})
-    _table.addColumn({"innerHTML": "test", "id": "test", "visible": true})
+    _table.addColumn({"innerHTML": "hola", "id": "hola", "visible": true, "sortable": true, "sortDefault": true})
+    _table.addColumn({"innerHTML": "adios", "id": "adios", "visible": true, "sortable": true})
+    _table.addColumn({"innerHTML": "test", "id": "test", "visible": false})
 
     for(var i = 0; i < 12; i++){
-        _table.addRow({"hola": i, "adios": i + 1, "test": i + 2,})
+        _table.addRow({"hola": Math.random(),"adios": Math.random(), "test": i + 2,})
     }
-
-
 </script>
 </html>
