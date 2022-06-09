@@ -121,6 +121,10 @@
             height: 100%;
             position:absolute;
         }
+        .search_bar {
+            width: 100%;
+            height: 50px;
+        }
     </style>
     
 </body>
@@ -128,13 +132,19 @@
     var beenClicked = undefined
     var min_width = 30
     class table {
-        constructor(){
+        constructor(options){
             this.headers_data = []
             this.rows_data = []
             this.node = document.createElement('div')
             this.node.classList.add("table")
             this.resizers = []
             this.sortedDirection = "up"
+            if(options.data_handeler){
+                this.data_handeler = options.data_handeler
+            }
+            this.search_button = document.createElement("div")
+            this.search_button.innerHTML = "&#128269;"
+            
         }
 
         addColumn = function(colInfo){
@@ -160,6 +170,15 @@
             p_data.innerHTML = act_header_info.innerHTML
             act_header.appendChild(p_data)
             act_header.classList.add("hCell")
+
+
+            var search_div = document.createElement("div")
+            search_div.classList.add("search_bar")
+            if(header_data["searchable"]){
+                var text_bar = document.createElement("input")
+                text_bar.classList.add("search_bar_input_text")
+                search_div.appendChild(text_bar)
+            }
             if(header_data["sortable"]){
                 var sort_html = document.createElement("div")
                 sort_html.classList.add("sort")
@@ -196,6 +215,7 @@
             var hRows = document.createElement("div")
             hRows.classList.add("rows")
             innerCol.appendChild(act_header)
+            innerCol.appendChild(search_div)
             innerCol.appendChild(hRows)
             col.appendChild(innerCol)
             col.appendChild(hResize)
@@ -410,12 +430,20 @@
     }
 </script>
 <script>
-    var _table = new table()
-    var table_frame = document.getElementById("table_frame")
-    table_frame.appendChild(_table.node)
-
+    /*
+    *   With db
     
-    _table.addColumn({"innerHTML": "hola", "id": "hola", "visible": true, "sortable": true, "sortDefault": true})
+    *   function data_handeler(){
+    *   }
+    * 
+    *   var _table = new table({"data_handeler": data_handeler})
+    */
+    var table_frame = document.getElementById("table_frame")
+    var _table = new table({})
+    table_frame.appendChild(_table.node)
+    document.body.appendChild(_table.search_button)
+    
+    _table.addColumn({"innerHTML": "hola", "id": "hola", "visible": true, "sortable": true, "sortDefault": true, "searchable": true})
     _table.addColumn({"innerHTML": "adios", "id": "adios", "visible": true, "sortable": true})
     _table.addColumn({"innerHTML": "test", "id": "test", "visible": true, "sortable": true})
 
@@ -424,5 +452,6 @@
         newRows.push({"hola": Math.random(),"adios": Math.random(), "test": i + 2})
     }
     _table.addRows(newRows)
+
 </script>
 </html>
